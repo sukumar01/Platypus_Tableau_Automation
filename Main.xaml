@@ -84,6 +84,7 @@
       <AssemblyReference>UiPath.Studio.Plugin.Workflow</AssemblyReference>
       <AssemblyReference>UiPath.System.Activities.Design</AssemblyReference>
       <AssemblyReference>System.Collections.Immutable</AssemblyReference>
+      <AssemblyReference>System.Runtime.WindowsRuntime</AssemblyReference>
     </sco:Collection>
   </TextExpression.ReferencesForImplementation>
   <StateMachine sap2010:Annotation.AnnotationText="-- ReFrameWork - Robotic Enterprise Framework --&#xA;-- TEMPLATE--" DisplayName="General Business Process" sap2010:WorkflowViewState.IdRef="StateMachine_1">
@@ -106,6 +107,8 @@
                     <Sequence sap2010:WorkflowViewState.IdRef="Sequence_22">
                       <Sequence.Variables>
                         <Variable x:TypeArguments="x:String" Default="TableauAutomation_DBString" Name="vDBAssetConnection" />
+                        <Variable x:TypeArguments="x:String" Name="vStrDBUser" />
+                        <Variable x:TypeArguments="ss:SecureString" Name="vStrDB_Password" />
                       </Sequence.Variables>
                       <Assign DisplayName="Assign Execution" sap2010:WorkflowViewState.IdRef="Assign_17">
                         <Assign.To>
@@ -115,11 +118,27 @@
                           <InArgument x:TypeArguments="x:String">[now.tostring("MMddyyyyhhmmss")]</InArgument>
                         </Assign.Value>
                       </Assign>
-                      <ui:GetRobotAsset TimeoutMS="{x:Null}" AssetName="[vDBAssetConnection]" DisplayName="Get db Asset" sap2010:WorkflowViewState.IdRef="GetRobotAsset_1">
-                        <ui:GetRobotAsset.Value>
+                      <ui:GetRobotCredential TimeoutMS="{x:Null}" AssetName="TableauAutomation_DBCred" DisplayName="Get Credential" sap2010:WorkflowViewState.IdRef="GetRobotCredential_2" Password="[vStrDB_Password]" Username="[vStrDBUser]" />
+                      <Assign DisplayName="Assign Connecting String" sap2010:WorkflowViewState.IdRef="Assign_27">
+                        <Assign.To>
                           <OutArgument x:TypeArguments="x:String">[vStrConnectionString]</OutArgument>
-                        </ui:GetRobotAsset.Value>
-                      </ui:GetRobotAsset>
+                        </Assign.To>
+                        <Assign.Value>
+                          <InArgument x:TypeArguments="x:String">[new System.Net.NetworkCredential(string.Empty, vStrDB_Password).Password]</InArgument>
+                        </Assign.Value>
+                      </Assign>
+                      <WriteLine DisplayName="Write Line" sap2010:WorkflowViewState.IdRef="WriteLine_2" Text="[vStrConnectionString]" />
+                      <ui:CommentOut DisplayName="Comment Out" sap2010:WorkflowViewState.IdRef="CommentOut_1">
+                        <ui:CommentOut.Body>
+                          <Sequence DisplayName="Ignored Activities" sap2010:WorkflowViewState.IdRef="Sequence_42">
+                            <ui:GetRobotAsset TimeoutMS="{x:Null}" AssetName="[vDBAssetConnection]" DisplayName="Get db Asset" sap2010:WorkflowViewState.IdRef="GetRobotAsset_1">
+                              <ui:GetRobotAsset.Value>
+                                <OutArgument x:TypeArguments="x:String">[vStrConnectionString]</OutArgument>
+                              </ui:GetRobotAsset.Value>
+                            </ui:GetRobotAsset>
+                          </Sequence>
+                        </ui:CommentOut.Body>
+                      </ui:CommentOut>
                       <ui:InvokeWorkflowFile ContinueOnError="{x:Null}" DisplayName="Invoke InitAllSettings workflow" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_16" UnSafe="False" WorkflowFileName="Framework\InitAllSettings.xaml">
                         <ui:InvokeWorkflowFile.Arguments>
                           <OutArgument x:TypeArguments="scg:Dictionary(x:String, x:Object)" x:Key="out_Config">[Config]</OutArgument>
@@ -598,7 +617,7 @@
       <Variable x:TypeArguments="scg:List(x:String)" Default="[new list(of string)]" Name="vListErrorSS" />
       <Variable x:TypeArguments="x:String" Name="vStrScreenshotPath" />
     </StateMachine.Variables>
-    <sads:DebugSymbol.Symbol>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</sads:DebugSymbol.Symbol>
+    <sads:DebugSymbol.Symbol>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</sads:DebugSymbol.Symbol>
   </StateMachine>
   <sap2010:WorkflowViewState.ViewStateManager>
     <sap2010:ViewStateManager>
@@ -610,7 +629,25 @@
           </scg:Dictionary>
         </sap:WorkflowViewStateService.ViewState>
       </sap2010:ViewStateData>
-      <sap2010:ViewStateData Id="GetRobotAsset_1" sap:VirtualizedContainerService.HintSize="314,22" />
+      <sap2010:ViewStateData Id="GetRobotCredential_2" sap:VirtualizedContainerService.HintSize="314,22" />
+      <sap2010:ViewStateData Id="Assign_27" sap:VirtualizedContainerService.HintSize="314,60" />
+      <sap2010:ViewStateData Id="WriteLine_2" sap:VirtualizedContainerService.HintSize="314,61" />
+      <sap2010:ViewStateData Id="GetRobotAsset_1" sap:VirtualizedContainerService.HintSize="200,22" />
+      <sap2010:ViewStateData Id="Sequence_42" sap:VirtualizedContainerService.HintSize="222,146">
+        <sap:WorkflowViewStateService.ViewState>
+          <scg:Dictionary x:TypeArguments="x:String, x:Object">
+            <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+          </scg:Dictionary>
+        </sap:WorkflowViewStateService.ViewState>
+      </sap2010:ViewStateData>
+      <sap2010:ViewStateData Id="CommentOut_1" sap:VirtualizedContainerService.HintSize="314,51">
+        <sap:WorkflowViewStateService.ViewState>
+          <scg:Dictionary x:TypeArguments="x:String, x:Object">
+            <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+            <x:Boolean x:Key="IsPinned">False</x:Boolean>
+          </scg:Dictionary>
+        </sap:WorkflowViewStateService.ViewState>
+      </sap2010:ViewStateData>
       <sap2010:ViewStateData Id="InvokeWorkflowFile_16" sap:VirtualizedContainerService.HintSize="314,87">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
@@ -621,10 +658,10 @@
       </sap2010:ViewStateData>
       <sap2010:ViewStateData Id="InvokeWorkflowFile_29" sap:VirtualizedContainerService.HintSize="314,87" />
       <sap2010:ViewStateData Id="GetRobotCredential_1" sap:VirtualizedContainerService.HintSize="314,22" />
-      <sap2010:ViewStateData Id="InvokeWorkflowFile_21" sap:VirtualizedContainerService.HintSize="314,51">
+      <sap2010:ViewStateData Id="InvokeWorkflowFile_21" sap:VirtualizedContainerService.HintSize="314,87">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
-            <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+            <x:Boolean x:Key="IsExpanded">True</x:Boolean>
             <x:Boolean x:Key="IsPinned">False</x:Boolean>
           </scg:Dictionary>
         </sap:WorkflowViewStateService.ViewState>
@@ -637,14 +674,14 @@
           </scg:Dictionary>
         </sap:WorkflowViewStateService.ViewState>
       </sap2010:ViewStateData>
-      <sap2010:ViewStateData Id="Sequence_22" sap:VirtualizedContainerService.HintSize="336,744">
+      <sap2010:ViewStateData Id="Sequence_22" sap:VirtualizedContainerService.HintSize="336,1072">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
             <x:Boolean x:Key="IsExpanded">True</x:Boolean>
           </scg:Dictionary>
         </sap:WorkflowViewStateService.ViewState>
       </sap2010:ViewStateData>
-      <sap2010:ViewStateData Id="If_1" sap:VirtualizedContainerService.HintSize="464,892">
+      <sap2010:ViewStateData Id="If_1" sap:VirtualizedContainerService.HintSize="464,1220">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
             <x:Boolean x:Key="IsExpanded">True</x:Boolean>
@@ -660,7 +697,7 @@
           </scg:Dictionary>
         </sap:WorkflowViewStateService.ViewState>
       </sap2010:ViewStateData>
-      <sap2010:ViewStateData Id="Sequence_4" sap:VirtualizedContainerService.HintSize="486,1207">
+      <sap2010:ViewStateData Id="Sequence_4" sap:VirtualizedContainerService.HintSize="486,1535">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
             <x:Boolean x:Key="IsExpanded">True</x:Boolean>
@@ -702,7 +739,7 @@
           </scg:Dictionary>
         </sap:WorkflowViewStateService.ViewState>
       </sap2010:ViewStateData>
-      <sap2010:ViewStateData Id="TryCatch_2" sap:VirtualizedContainerService.HintSize="504,1456">
+      <sap2010:ViewStateData Id="TryCatch_2" sap:VirtualizedContainerService.HintSize="504,1784">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
             <x:Boolean x:Key="IsExpanded">True</x:Boolean>
@@ -1108,7 +1145,7 @@
           </scg:Dictionary>
         </sap:WorkflowViewStateService.ViewState>
       </sap2010:ViewStateData>
-      <sap2010:ViewStateData Id="State_2" sap:VirtualizedContainerService.HintSize="234,88">
+      <sap2010:ViewStateData Id="State_2" sap:VirtualizedContainerService.HintSize="530,2227">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
             <av:Point x:Key="ShapeLocation">253,16</av:Point>
